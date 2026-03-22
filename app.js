@@ -11,27 +11,55 @@ import tasteCompassRouter from "./routes/tasteCompass.js";
 
 dotenv.config();
 
-console.log("🔌 Connecting to MongoDB...");
-mongoose.connect(process.env.MONGO_URI, {
-  serverSelectionTimeoutMS: 5000,
-})
-  .then(() => console.log("✅ MongoDB connected successfully!"))
-  .catch(err => {
-    console.error("❌ MongoDB connection failed:", err.message);
-    console.error("Check: 1) IP whitelist in Atlas, 2) Connection string, 3) Network");
-  });
+const sessionSecret =
+  process.env.SESSION_SECRET ||
+  (process.env.NODE_ENV === "production"
+    ? null
+    : "dev-synq-session-not-for-production");
+if (!sessionSecret) {
+  console.error("Missing SESSION_SECRET (required in production)");
+  process.exit(1);
+}
+
+const spotifyConfigured =
+  Boolean(
+    process.env.SPOTIFY_CLIENT_ID &&
+      process.env.SPOTIFY_CLIENT_SECRET &&
+      process.env.SPOTIFY_CALLBACK_URL
+  );
+
+if (process.env.MONGO_URI) {
+  console.log("🔌 Connecting to MongoDB...");
+  mongoose
+    .connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
+    })
+    .then(() => console.log("✅ MongoDB connected successfully!"))
+    .catch((err) => {
+      console.error("❌ MongoDB connection failed:", err.message);
+      console.error(
+        "Check: 1) IP whitelist in Atlas, 2) Connection string, 3) Network"
+      );
+    });
+} else {
+  console.log(
+    "ℹ️ MONGO_URI not set — MongoDB skipped (TasteCompass demo works without DB)."
+  );
+}
 
 const app = express();
 if (process.env.NODE_ENV === "production" || process.env.TRUST_PROXY === "1") {
   app.set("trust proxy", 1);
 }
+
+app.get("/health", (req, res) => res.status(200).type("text/plain").send("ok"));
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
   })
@@ -42,84 +70,105 @@ app.use(passport.session());
 
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
+  try {
+    if (!process.env.MONGO_URI) return done(null, null);
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (e) {
+    console.error("deserializeUser:", e.message);
+    done(null, null);
+  }
 });
 
-passport.use(
-  new SpotifyStrategy(
-    {
-      clientID: process.env.SPOTIFY_CLIENT_ID,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      callbackURL: process.env.SPOTIFY_CALLBACK_URL,
-    },
-    async (accessToken, refreshToken, expires_in, profile, done) => {
-      try {
-        console.log("🔑 Spotify auth callback:", profile.displayName);
-        let user = await User.findOne({ spotifyId: profile.id });
-        if (!user) {
-          user = await User.create({
-            spotifyId: profile.id,
-            name: profile.displayName,
-            avatar: profile.photos?.[0]?.value || profile.photos?.[0] || "https://via.placeholder.com/150",
-            accessToken,
-          });
-          console.log("✅ New user created:", user.name);
-        } else {
-          user.accessToken = accessToken;
-          await user.save();
-          console.log("✅ User updated:", user.name);
+if (spotifyConfigured) {
+  passport.use(
+    new SpotifyStrategy(
+      {
+        clientID: process.env.SPOTIFY_CLIENT_ID,
+        clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+        callbackURL: process.env.SPOTIFY_CALLBACK_URL,
+      },
+      async (accessToken, refreshToken, expires_in, profile, done) => {
+        try {
+          console.log("🔑 Spotify auth callback:", profile.displayName);
+          let user = await User.findOne({ spotifyId: profile.id });
+          if (!user) {
+            user = await User.create({
+              spotifyId: profile.id,
+              name: profile.displayName,
+              avatar:
+                profile.photos?.[0]?.value ||
+                profile.photos?.[0] ||
+                "https://via.placeholder.com/150",
+              accessToken,
+            });
+            console.log("✅ New user created:", user.name);
+          } else {
+            user.accessToken = accessToken;
+            await user.save();
+            console.log("✅ User updated:", user.name);
+          }
+          return done(null, user);
+        } catch (error) {
+          console.error("❌ Auth error:", error);
+          return done(error, null);
         }
-        return done(null, user);
-      } catch (error) {
-        console.error("❌ Auth error:", error);
-        return done(error, null);
       }
-    }
-  )
-);
+    )
+  );
+}
 
 app.get("/", (req, res) => res.render("index"));
 app.use("/taste-compass", tasteCompassRouter);
-app.get("/auth/spotify", passport.authenticate("spotify", { 
-  scope: ["user-read-email", "user-top-read", "playlist-modify-public", "playlist-modify-private"] 
-}));
 
-app.get(
-  "/auth/spotify/callback",
-  passport.authenticate("spotify", { failureRedirect: "/" }),
-  async (req, res) => {
-    try {
-      console.log("📥 Callback received for:", req.user.name);
-      const user = await User.findById(req.user._id);
-      
-      // ВСЕГДА обновляем топ-артисты при каждой авторизации (по умолчанию 6 месяцев)
-      const apiUrl = "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term";
-      console.log("🔗 Request URL:", apiUrl);
-      const response = await fetch(apiUrl, {
-        headers: { Authorization: `Bearer ${user.accessToken}` },
-      });
-      const data = await response.json();
-      console.log("📦 Response status:", response.status);
-      console.log("🎵 Got top artists:", data.items?.length || 0);
-      console.log("🎸 Artists list:", data.items?.map((a) => a.name) || []);
-      
-      // Сохраняем и имена и детальную статистику
-      user.topArtists = data.items.map((a) => a.name);
-      user.artistStats = data.items.map((artist, index) => ({
-        name: artist.name,
-        rank: index + 1, // 1-50
-        spotifyId: artist.id
-      }));
-      await user.save();
-      console.log("✅ Saved to DB:", user.topArtists.length, "artists");
-      res.redirect("/profile");
-    } catch (error) {
-      console.error("❌ Callback error:", error);
-      res.redirect("/?error=callback_failed");
+if (spotifyConfigured) {
+  app.get(
+    "/auth/spotify",
+    passport.authenticate("spotify", {
+      scope: [
+        "user-read-email",
+        "user-top-read",
+        "playlist-modify-public",
+        "playlist-modify-private",
+      ],
+    })
+  );
+
+  app.get(
+    "/auth/spotify/callback",
+    passport.authenticate("spotify", { failureRedirect: "/" }),
+    async (req, res) => {
+      try {
+        console.log("📥 Callback received for:", req.user.name);
+        const user = await User.findById(req.user._id);
+
+        const apiUrl =
+          "https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term";
+        console.log("🔗 Request URL:", apiUrl);
+        const response = await fetch(apiUrl, {
+          headers: { Authorization: `Bearer ${user.accessToken}` },
+        });
+        const data = await response.json();
+        console.log("📦 Response status:", response.status);
+        console.log("🎵 Got top artists:", data.items?.length || 0);
+        console.log("🎸 Artists list:", data.items?.map((a) => a.name) || []);
+
+        user.topArtists = data.items.map((a) => a.name);
+        user.artistStats = data.items.map((artist, index) => ({
+          name: artist.name,
+          rank: index + 1,
+          spotifyId: artist.id,
+        }));
+        await user.save();
+        console.log("✅ Saved to DB:", user.topArtists.length, "artists");
+        res.redirect("/profile");
+      } catch (error) {
+        console.error("❌ Callback error:", error);
+        res.redirect("/?error=callback_failed");
+      }
     }
-  }
-);
+  );
+}
 
 app.get("/profile", async (req, res) => {
   if (!req.user) return res.redirect("/");

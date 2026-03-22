@@ -1,0 +1,19 @@
+# Деплой на Render: https://render.com/deploy?repo=https://github.com/SweetLeaf420smoke/RECOMMEND-AI
+# После подключения GitHub сервис поднимется сам. Демо: https://<имя-сервиса>.onrender.com/taste-compass/
+services:
+  - type: web
+    name: recommend-ai
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SESSION_SECRET
+        generateValue: true
