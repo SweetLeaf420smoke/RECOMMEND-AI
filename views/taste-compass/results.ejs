@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %>, демо <%= demoVersion %></title>
+  <link rel="stylesheet" href="/taste-compass.css">
+</head>
+<body class="tc">
+  <main class="tc-card tc-wide">
+    <p class="tc-badge">Демо <%= demoVersion %></p>
+    <% const greet = profile.displayName ? `, ${profile.displayName}` : ""; %>
+    <h1>Привет<%= greet %>, вот идеи для <%= cityLabel %></h1>
+
+    <% if (typeof feedbackNote !== 'undefined' && feedbackNote) { %>
+      <p class="tc-note"><%= feedbackNote %></p>
+    <% } %>
+
+    <p class="tc-intro">Ниже до пяти разных типов вечера. Первый в списке ближе всего к твоим ответам, остальные запасные, чтобы можно было выбрать под настроение. Мы специально смешиваем форматы, а не повторяем один и тот же совет десять раз. Сейчас данные примерные, а ссылки не ведут в живые брони.</p>
+    <% if (profile.datePlan) { %>
+      <p class="tc-muted">Сроки, которые ты указал: <strong><%= profile.datePlan %></strong>. В полной версии сюда можно было бы привязать афишу.</p>
+    <% } %>
+    <% const moodLabels = { calm: "спокойный вечер", lively: "шумно и по-людски", late: "ночь напролёт" }; %>
+    <% const companyLabels = { solo: "один", couple: "вдвоём", friends: "с друзьями", family_kids: "с детьми или семьёй", open: "важны новые знакомства", any: "состав не важен" }; %>
+    <% if (profile.eveningMood) { %>
+      <p class="tc-muted">В подборке учтены настроение вечера (<%= moodLabels[profile.eveningMood] || profile.eveningMood %>) и состав (<%= companyLabels[profile.company] || profile.company %>).</p>
+    <% } %>
+
+    <% if (!topPick) { %>
+      <p class="tc-error">Пока нечего показать. Попробуй другой город или отметь больше вкусов в опросе.</p>
+    <% } else { %>
+
+    <section class="tc-hero" aria-labelledby="hero-title">
+      <h2 id="hero-title">Главная идея вечера</h2>
+      <article class="tc-place tc-place-hero">
+        <h3><%= topPick.place.name %></h3>
+        <% if (topPick.place.neighborhood) { %>
+          <p class="tc-muted">Район: <%= topPick.place.neighborhood %></p>
+        <% } %>
+        <% if (topPick.place.description) { %>
+          <p class="tc-desc"><%= topPick.place.description %></p>
+        <% } %>
+        <p class="tc-why"><strong>Почему это попало:</strong> <%= topPick.reasons.join(" ") %></p>
+        <p><a href="<%= topPick.place.url %>" target="_blank" rel="noopener">Открыть пример ссылки</a></p>
+        <form method="post" action="/taste-compass/feedback" class="tc-inline">
+          <input type="hidden" name="placeId" value="<%= topPick.place.id %>">
+          <button type="submit" name="action" value="went" class="tc-btn tc-btn-secondary">Нравится</button>
+          <button type="submit" name="action" value="hide" class="tc-btn tc-btn-secondary">Не нравится</button>
+        </form>
+      </article>
+    </section>
+
+    <% if (alternatives.length) { %>
+    <section class="tc-alt" aria-labelledby="alt-title">
+      <h2 id="alt-title">Ещё варианты, другой тип вечера</h2>
+      <p class="tc-hint">Если главная идея не зашла, посмотри соседей по списку. Это другой тип вечера, а не повтор того же совета.</p>
+      <ol class="tc-list tc-list-alt" start="2">
+        <% alternatives.forEach((row) => { %>
+          <li>
+            <h3><%= row.place.name %></h3>
+            <% if (row.place.neighborhood) { %><p class="tc-muted"><%= row.place.neighborhood %></p><% } %>
+            <% if (row.place.description) { %><p class="tc-desc"><%= row.place.description %></p><% } %>
+            <p class="tc-why-small"><%= row.reasons.slice(0, 3).join(" ") %></p>
+            <p><a href="<%= row.place.url %>" target="_blank" rel="noopener">Ссылка</a></p>
+            <form method="post" action="/taste-compass/feedback" class="tc-inline">
+              <input type="hidden" name="placeId" value="<%= row.place.id %>">
+              <button type="submit" name="action" value="went" class="tc-btn tc-btn-secondary">Нравится</button>
+              <button type="submit" name="action" value="hide" class="tc-btn tc-btn-secondary">Не нравится</button>
+            </form>
+          </li>
+        <% }) %>
+      </ol>
+    </section>
+    <% } %>
+
+    <% if (hiddenCount > 0) { %>
+      <p class="tc-muted">В каталоге ещё <%= hiddenCount %> вариантов ниже по списку. В полной версии можно было бы развернуть всё.</p>
+    <% } %>
+
+    <% } %>
+
+    <p><a href="/taste-compass/survey">Изменить ответы</a> · <a href="/taste-compass/">О демо</a></p>
+  </main>
+</body>
+</html>

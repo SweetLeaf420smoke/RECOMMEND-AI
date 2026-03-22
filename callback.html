@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизация...</title>
+</head>
+<body>
+    <script>
+        // Перенаправляем обратно с токеном
+        if (window.location.hash) {
+            window.opener.location.href = 'playlist-maker.html' + window.location.hash;
+            window.close();
+        }
+    </script>
+</body>
+</html>
+

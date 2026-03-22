@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= artistName %> - Synq</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: white;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header {
+        text-align: center;
+        padding: 40px 0;
+      }
+      .header h1 {
+        font-size: 3em;
+        margin: 0 0 10px 0;
+      }
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin: 20px 0;
+      }
+      .stat-box {
+        background: rgba(255,255,255,0.2);
+        padding: 15px 30px;
+        border-radius: 15px;
+        text-align: center;
+      }
+      .stat-number {
+        font-size: 2em;
+        font-weight: bold;
+        color: #1DB954;
+      }
+      .stat-label {
+        font-size: 0.9em;
+        opacity: 0.8;
+        margin-top: 5px;
+      }
+      .section {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px 0;
+      }
+      .section h2 {
+        margin-top: 0;
+      }
+      .listeners-list {
+        display: grid;
+        gap: 15px;
+      }
+      .listener-row {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.15);
+        padding: 15px;
+        border-radius: 12px;
+        transition: transform 0.2s;
+      }
+      .listener-row:hover {
+        transform: translateX(5px);
+        background: rgba(255,255,255,0.25);
+      }
+      .rank {
+        font-size: 1.5em;
+        font-weight: bold;
+        min-width: 50px;
+        color: #1DB954;
+      }
+      .listener-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid white;
+        margin: 0 15px;
+      }
+      .listener-info {
+        flex: 1;
+      }
+      .listener-name {
+        font-size: 1.1em;
+        font-weight: 500;
+      }
+      .listener-rank-badge {
+        font-size: 0.9em;
+        opacity: 0.8;
+      }
+      .listener-streams {
+        font-size: 1.2em;
+        font-weight: bold;
+        min-width: 100px;
+        text-align: right;
+      }
+      .back-btn {
+        display: inline-block;
+        padding: 10px 25px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        text-decoration: none;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+      }
+      .back-btn:hover {
+        background: rgba(255,255,255,0.3);
+      }
+      .no-listeners {
+        text-align: center;
+        opacity: 0.7;
+        padding: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <% if (currentUser) { %>
+        <a href="/profile" class="back-btn">← Назад в профиль</a>
+      <% } else { %>
+        <a href="/" class="back-btn">← На главную</a>
+      <% } %>
+
+      <div class="header">
+        <h1>🎸 <%= artistName %></h1>
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-number"><%= totalListeners %></div>
+            <div class="stat-label">слушателей в Synq</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number"><%= totalStreams %></div>
+            <div class="stat-label">условных стримов</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>🎧 Топ слушатели</h2>
+        
+        <% if (listeners.length > 0) { %>
+          <div class="listeners-list">
+            <% listeners.forEach((listener, index) => { %>
+              <div class="listener-row">
+                <div class="rank">#<%= index + 1 %></div>
+                <img src="<%= listener.avatar %>" alt="<%= listener.name %>" class="listener-avatar">
+                <div class="listener-info">
+                  <div class="listener-name"><%= listener.name %></div>
+                  <div class="listener-rank-badge">
+                    <% if (listener.rank === 1) { %>
+                      👑 #1 артист
+                    <% } else { %>
+                      #<%= listener.rank %> в топе
+                    <% } %>
+                  </div>
+                </div>
+                <div class="listener-streams">
+                  <%= listener.streams %> 🔥
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="no-listeners">
+            Пока никто не слушает <%= artistName %> в Synq 😢
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>
+

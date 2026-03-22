@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synq - Твой профиль</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: white;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .profile-header {
+        text-align: center;
+        padding: 40px 0;
+      }
+      .profile-header img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      }
+      .profile-header h2 {
+        font-size: 2em;
+        margin: 20px 0 10px 0;
+      }
+      .logout-btn {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 25px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        text-decoration: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+      }
+      .logout-btn:hover {
+        background: rgba(255,255,255,0.3);
+      }
+      .section {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px 0;
+      }
+      .section h3 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+      }
+      .artists-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        list-style: none;
+        padding: 0;
+      }
+      .artists-list li {
+        background: rgba(255,255,255,0.2);
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .matches-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+      }
+      .match-card {
+        background: rgba(255,255,255,0.2);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.3s ease;
+      }
+      .match-card:hover {
+        transform: translateY(-5px);
+      }
+      .match-card img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid white;
+        margin-bottom: 10px;
+      }
+      .match-card p {
+        margin: 5px 0;
+      }
+      .match-score {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #1DB954;
+      }
+      .no-matches {
+        text-align: center;
+        opacity: 0.7;
+        font-size: 1.1em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="profile-header">
+        <img src="<%= user.avatar %>" alt="<%= user.name %>">
+        <h2>Привет, <%= user.name %>! 👋</h2>
+        <div style="margin-top: 15px;">
+          <a href="/refresh?period=short_term" class="logout-btn">🔄 4 недели</a>
+          <a href="/refresh?period=medium_term" class="logout-btn">🔄 6 месяцев</a>
+          <a href="/refresh?period=long_term" class="logout-btn">🔄 Всё время</a>
+        </div>
+        <div style="margin-top: 10px;">
+          <a href="/playlist-maker" class="logout-btn">📋 Playlist Maker</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>🎸 Твои топ-артисты:</h3>
+        <ul class="artists-list">
+          <% user.topArtists.forEach(artist => { %>
+            <li><a href="/artist/<%= encodeURIComponent(artist) %>" style="color: white; text-decoration: none;"><%= artist %></a></li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3>🤝 Люди с похожим вкусом:</h3>
+        <% if (matches.length > 0) { %>
+          <div class="matches-grid">
+            <% matches.forEach(m => { %>
+              <div class="match-card">
+                <img src="<%= m.avatar %>" alt="<%= m.name %>">
+                <p><strong><%= m.name %></strong></p>
+                <p class="match-score"><%= m.score %>%</p>
+                <p style="font-size:0.9em;opacity:0.8;">Совпадений по артистам: <%= m.overlap.length %></p>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="no-matches">Пока нет пользователей с похожим вкусом. Пригласи друзей! 🎵</p>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,21 @@
+{
+  "name": "synq",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "ejs": "^3.1.9",
+    "express": "^4.19.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^7.5.0",
+    "node-fetch": "^3.3.2",
+    "passport": "^0.6.0",
+    "passport-spotify": "^2.0.0",
+    "puppeteer": "^21.0.0"
+  }
+}
+

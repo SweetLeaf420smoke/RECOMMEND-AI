@@ -1,0 +1,138 @@
+{
+  "cities": [
+    { "id": "berlin_demo", "label": "Берлин (демо)" },
+    { "id": "tokyo_demo", "label": "Токио (демо)" }
+  ],
+  "places": [
+    {
+      "id": "berlin_techno_01",
+      "cityId": "berlin_demo",
+      "name": "Клуб: техно, линейка на выходных",
+      "description": "Ночной клуб с электронной музыкой и длинными сетами. Не «популярное в городе», а формат для тех, кто хочет танцевать до утра; демо-ссылка — в реальности смотри афишу и дресс-код.",
+      "type": "venue",
+      "tags": ["electronic", "club"],
+      "nightType": "club",
+      "budget": "mid",
+      "neighborhood": "Friedrichshain",
+      "url": "https://example.com/berlin-club-demo",
+      "why": "Подходит, если отметил электронику и клуб до утра."
+    },
+    {
+      "id": "berlin_vinyl_01",
+      "cityId": "berlin_demo",
+      "name": "Винил-бар с диджеем",
+      "description": "Небольшой бар, где крутят пластинки и иногда играет диджей. Тише клуба: можно сидеть, слушать музыку и разговаривать. Удобно между «хочу дуб/электронику» и «не хочу толпу на танцполе».",
+      "type": "venue",
+      "tags": ["dub", "electronic", "bar"],
+      "nightType": "bar",
+      "budget": "mid",
+      "neighborhood": "Kreuzberg",
+      "url": "https://example.com/berlin-vinyl-demo",
+      "why": "Спокойнее клуба; даб, электроника и формат бара."
+    },
+    {
+      "id": "berlin_cinema_01",
+      "cityId": "berlin_demo",
+      "name": "Кинотеатр: ретроспектива артхауса",
+      "description": "Небольшой зал с артхаусом и ретроспективами. Вечер «посмотреть фильм и выйти» без обязательного бара после. Удобно, если отметил артхаус и формат «кино в зале».",
+      "type": "event",
+      "tags": ["arthouse", "cinema"],
+      "nightType": "cinema",
+      "budget": "low",
+      "neighborhood": "Mitte",
+      "url": "https://example.com/berlin-kinemo-demo",
+      "why": "Для любителей артхауса и вечера «кино»."
+    },
+    {
+      "id": "berlin_jazz_01",
+      "cityId": "berlin_demo",
+      "name": "Джаз-клуб (сет на вечер)",
+      "description": "Живой джаз в помещении, обычно столики и напитки. Это не «просто бар с джазом в колонках», а сет музыкантов — проверяй расписание на даты.",
+      "type": "venue",
+      "tags": ["jazz", "concert"],
+      "nightType": "concert",
+      "budget": "mid",
+      "neighborhood": "Neukölln",
+      "url": "https://example.com/berlin-jazz-demo",
+      "why": "Если в опросе джаз и концертный формат."
+    },
+    {
+      "id": "berlin_quiet_01",
+      "cityId": "berlin_demo",
+      "name": "Винный бар без танцпола",
+      "description": "Небольшой винный бар: спокойный свет, разговор, без танцпола. Подходит для вечера «потихоньку» после инди или вина, без клубной громкости.",
+      "type": "venue",
+      "tags": ["indie", "bar"],
+      "nightType": "quiet",
+      "budget": "high",
+      "neighborhood": "Prenzlauer Berg",
+      "url": "https://example.com/berlin-wine-demo",
+      "why": "Тихий вечер и разговор; инди и бар."
+    },
+    {
+      "id": "tokyo_jazz_01",
+      "cityId": "tokyo_demo",
+      "name": "Джаз-киссатен (винтажная атмосфера)",
+      "description": "Киссатен — это маленький японский джаз-бар: часто тесно, дым, винил или живой сет. Не «клуб» и не «ресторан»: это отдельный культурный формат, про который стоит почитать заранее.",
+      "type": "venue",
+      "tags": ["jazz", "bar"],
+      "nightType": "bar",
+      "budget": "mid",
+      "neighborhood": "Shinjuku",
+      "url": "https://example.com/tokyo-jazz-demo",
+      "why": "Классический формат для джаза и спокойного вечера."
+    },
+    {
+      "id": "tokyo_cinema_01",
+      "cityId": "tokyo_demo",
+      "name": "Мини-кинотеатр: авторское кино",
+      "description": "Небольшой зал с артхаусом и азиатским кино. Подходит, если хочешь сессию «кино в зале» и не обязательно большой мультик.",
+      "type": "venue",
+      "tags": ["arthouse", "asian_cinema", "cinema"],
+      "nightType": "cinema",
+      "budget": "low",
+      "neighborhood": "Shibuya",
+      "url": "https://example.com/tokyo-mini-cinema-demo",
+      "why": "Артхаус и азиатское кино."
+    },
+    {
+      "id": "tokyo_club_01",
+      "cityId": "tokyo_demo",
+      "name": "Клуб: электроника, поздний вход",
+      "description": "Ночной клуб с электроникой и поздним входом. Демо-ссылка; в реальности смотри афишу и правила входа.",
+      "type": "venue",
+      "tags": ["electronic", "club"],
+      "nightType": "club",
+      "budget": "high",
+      "neighborhood": "Roppongi",
+      "url": "https://example.com/tokyo-club-demo",
+      "why": "Электроника и ночной клуб."
+    },
+    {
+      "id": "tokyo_concert_01",
+      "cityId": "tokyo_demo",
+      "name": "Лайв-хаус: инди и рок",
+      "description": "Лайв-хаус — это небольшая сцена для живых групп: инди, рок, иногда металл. Приходят на конкретный концерт; билеты и лайн-ап обычно заранее на сайте площадки.",
+      "type": "venue",
+      "tags": ["indie", "concert"],
+      "nightType": "concert",
+      "budget": "mid",
+      "neighborhood": "Shimokitazawa",
+      "url": "https://example.com/tokyo-live-demo",
+      "why": "Инди и концертный формат."
+    },
+    {
+      "id": "tokyo_quiet_01",
+      "cityId": "tokyo_demo",
+      "name": "Кофе и пластинки днём",
+      "description": "Дневной формат: кофейня или бар с пластинками, где можно послушать музыку и полистать винил без ночного шума. Для вечера это скорее «спокойный выход», чем клуб.",
+      "type": "venue",
+      "tags": ["dub", "quiet"],
+      "nightType": "quiet",
+      "budget": "low",
+      "neighborhood": "Koenji",
+      "url": "https://example.com/tokyo-records-demo",
+      "why": "Спокойный день; даб и винил без ночного шума."
+    }
+  ]
+}

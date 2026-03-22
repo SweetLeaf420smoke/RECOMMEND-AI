@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %>, демо <%= demoVersion %></title>
+  <link rel="stylesheet" href="/taste-compass.css">
+</head>
+<body class="tc">
+  <main class="tc-card tc-wide">
+    <p class="tc-badge">Демо <%= demoVersion %></p>
+    <h1>Подборка вечера по вкусу</h1>
+    <p class="tc-intro">Твои ответы на вопросы помогут собрать несколько разных идей, куда выйти в выбранном городе. Можно отметить сразу несколько форматов вечера. Список мест сейчас учебный, а не реальная афиша.</p>
+
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+      <p class="tc-error"><%= errorMessage %></p>
+    <% } %>
+
+    <form method="post" action="/taste-compass/results" class="tc-form">
+      <label for="displayName">Как к тебе обращаться (по желанию)</label>
+      <input type="text" id="displayName" name="displayName" placeholder="Имя" maxlength="40" autocomplete="given-name">
+
+      <label for="cityId">Город для подборки</label>
+      <p class="tc-hint">Выбери город, где планируешь вечер или поездку. От этого зависят примеры мест.</p>
+      <select name="cityId" id="cityId" required>
+        <% cities.forEach(c => { %>
+          <option value="<%= c.id %>"><%= c.label %></option>
+        <% }) %>
+      </select>
+
+      <label for="datePlan">Когда планируешь (по желанию)</label>
+      <input type="text" id="datePlan" name="datePlan" placeholder="Например: эти выходные, 12 марта, весна" maxlength="80">
+
+      <fieldset>
+        <legend>Музыка и сцена (можно несколько)</legend>
+        <p class="tc-hint">Можно отметить всё, что слушаешь; подборка учтёт комбинацию.</p>
+        <label><input type="checkbox" name="music" value="electronic"> Электроника / клубы</label>
+        <label><input type="checkbox" name="music" value="dub"> Даб / регги / саундсистем</label>
+        <label><input type="checkbox" name="music" value="jazz"> Джаз</label>
+        <label><input type="checkbox" name="music" value="indie"> Инди</label>
+        <label><input type="checkbox" name="music" value="hip_hop"> Хип-хоп</label>
+        <label><input type="checkbox" name="music" value="classical"> Классика</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Кино (можно несколько)</legend>
+        <label><input type="checkbox" name="film" value="arthouse"> Артхаус</label>
+        <label><input type="checkbox" name="film" value="blockbuster"> Блокбастеры</label>
+        <label><input type="checkbox" name="film" value="documentary"> Документалистика</label>
+        <label><input type="checkbox" name="film" value="asian_cinema"> Азиатское кино</label>
+        <label><input type="checkbox" name="film" value="horror"> Ужасы</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Какие форматы вечера тебе подходят (отметь всё подходящее)</legend>
+        <p class="tc-hint">Нужен хотя бы один вариант.</p>
+        <label><input type="checkbox" name="night" value="club"> Клуб до утра</label>
+        <label><input type="checkbox" name="night" value="bar"> Бар и разговор</label>
+        <label><input type="checkbox" name="night" value="concert"> Концерт / лайв</label>
+        <label><input type="checkbox" name="night" value="cinema"> Кино в зале</label>
+        <label><input type="checkbox" name="night" value="cinema_bar"> Сначала кино, потом бар</label>
+        <label><input type="checkbox" name="night" value="quiet"> Спокойно, без шума</label>
+      </fieldset>
+
+      <fieldset class="tc-fieldset-mood">
+        <legend>Какое настроение у этого вечера важнее всего</legend>
+        <p class="tc-hint">Один вариант на сегодня. Так мы не смешиваем «тихий бар» с «до утра в клубе».</p>
+        <label><input type="radio" name="eveningMood" value="calm" required> Спокойно: разговор, без давления толпы, не обязательно до рассвета</label>
+        <label><input type="radio" name="eveningMood" value="lively"> По-людски и шумно: бар, толпа, живой зал, но не обязательно клуб до утра</label>
+        <label><input type="radio" name="eveningMood" value="late"> Ночь напролёт: танцпол, клуб, поздний выход</label>
+      </fieldset>
+
+      <label for="company">С кем выходишь</label>
+      <p class="tc-hint">Чтобы не предлагать ночной клуб, если ты планируешь вечер с детьми.</p>
+      <select name="company" id="company">
+        <option value="solo">Один</option>
+        <option value="couple">Вдвоём (пара)</option>
+        <option value="friends">С друзьями</option>
+        <option value="family_kids">С детьми или всей семьёй</option>
+        <option value="open">Важны новые знакомства</option>
+        <option value="any" selected>Не важно</option>
+      </select>
+
+      <label for="budget">Бюджет на вечер</label>
+      <select name="budget" id="budget" required>
+        <option value="low">Низкий</option>
+        <option value="mid" selected>Средний</option>
+        <option value="high">Высокий</option>
+      </select>
+
+      <button type="submit" class="tc-btn">Показать подборку</button>
+    </form>
+    <p><a href="/taste-compass/">Назад</a></p>
+  </main>
+</body>
+</html>

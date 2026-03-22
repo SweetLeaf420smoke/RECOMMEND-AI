@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Stats.fm → Spotify (Progressive)</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #1DB954 0%, #191414 100%);
+        min-height: 100vh;
+        color: white;
+      }
+      .container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: rgba(0,0,0,0.7);
+        padding: 40px;
+        border-radius: 20px;
+      }
+      input {
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        background: rgba(255,255,255,0.1);
+        color: white;
+      }
+      button {
+        width: 100%;
+        padding: 15px;
+        font-size: 18px;
+        background: #1DB954;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+      #logs {
+        margin: 20px 0;
+        background: rgba(0,0,0,0.5);
+        padding: 15px;
+        border-radius: 10px;
+        font-family: monospace;
+        font-size: 13px;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+      .track-list {
+        margin-top: 20px;
+        background: rgba(0,0,0,0.5);
+        padding: 15px;
+        border-radius: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .track-item {
+        padding: 8px;
+        margin: 5px 0;
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+        animation: fadeIn 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .play-btn {
+        background: #1DB954;
+        border: none;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 18px;
+        min-width: 35px;
+        height: 35px;
+      }
+      .play-btn:hover {
+        background: #1ed760;
+      }
+      #player {
+        margin: 20px 0;
+        background: rgba(0,0,0,0.7);
+        padding: 20px;
+        border-radius: 12px;
+        display: none;
+      }
+      #player iframe {
+        border-radius: 12px;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .copy-btn {
+        background: #1DB954;
+        margin: 20px 0;
+      }
+      .stats {
+        text-align: center;
+        padding: 15px;
+        background: rgba(29, 185, 84, 0.2);
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+    </style>
+</head>
+<body>
+    <div class="container">
+      <a href="/" style="color: white; text-decoration: none;">← Назад</a>
+      
+      <h1 style="text-align: center;">🎵 Stats.fm → Spotify</h1>
+      
+      <input 
+        type="text" 
+        id="url" 
+        placeholder="https://stats.fm/username или https://stats.fm/username/tracks"
+      />
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button style="flex: 1;" onclick="start('weeks')">📅 4 недели</button>
+        <button style="flex: 1;" onclick="start('months')">📅 6 месяцев</button>
+        <button style="flex: 1;" onclick="start('lifetime')">📅 Всё время</button>
+      </div>
+      
+      <div id="logs"></div>
+      <div id="stats" class="stats" style="display: none;"></div>
+      <div style="display: flex; gap: 10px;">
+        <button id="createBtn" class="copy-btn" style="display: none; flex: 2;" onclick="createPlaylist()">
+          🎵 Создать плейлист в Spotify
+        </button>
+        <button id="copyBtn" class="copy-btn" style="display: none; flex: 1;" onclick="copyUris()">
+          📋 Скопировать URI
+        </button>
+      </div>
+      
+      <div id="player"></div>
+      
+      <div id="tracks" class="track-list" style="display: none;"></div>
+    </div>
+
+    <script>
+      let allTracks = [];
+      let urisData = '';
+      let profileName = '';
+      let currentRange = '';
+      
+      function addLog(msg) {
+        const logs = document.getElementById('logs');
+        logs.style.display = 'block';
+        const time = new Date().toLocaleTimeString('ru-RU');
+        logs.innerHTML += `<div>[${time}] ${msg}</div>`;
+        logs.scrollTop = logs.scrollHeight;
+      }
+      
+      function updateStats(found, total) {
+        const stats = document.getElementById('stats');
+        stats.style.display = 'block';
+        stats.innerHTML = `✅ Найдено: <strong>${found}/${total}</strong> треков`;
+      }
+      
+      function addTrack(track) {
+        const list = document.getElementById('tracks');
+        list.style.display = 'block';
+        
+        const div = document.createElement('div');
+        div.className = 'track-item';
+        
+        if (track.spotifyUrl) {
+          div.innerHTML = '<span style="flex: 1;">' + track.position + '. <a href="' + track.spotifyUrl + '" target="_blank" style="color: #1DB954;">' + track.name + '</a> <span style="opacity: 0.7;">(' + track.playedMinutes + ' мин)</span></span>';
+        } else {
+          div.innerHTML = '<span style="flex: 1;">' + track.position + '. ' + track.name + ' ❌</span>';
+          div.style.opacity = '0.5';
+        }
+        
+        list.appendChild(div);
+      }
+      
+      function start(range) {
+        currentRange = range;
+        let url = document.getElementById('url').value.trim();
+        
+        if (!url.includes('stats.fm')) {
+          alert('❌ Введи правильную ссылку stats.fm');
+          return;
+        }
+        
+        // Нормализуем URL
+        url = url.split('?')[0];
+        if (!url.includes('/tracks')) {
+          url = url + '/tracks';
+        }
+        url = url + '?range=' + range;
+        
+        addLog('🔗 URL: ' + url);
+        
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+        
+        document.getElementById('logs').innerHTML = '';
+        document.getElementById('tracks').innerHTML = '';
+        document.getElementById('copyBtn').style.display = 'none';
+        allTracks = [];
+        
+        addLog('🚀 Начинаю извлечение (' + (range === 'weeks' ? '4 недели' : range === 'months' ? '6 месяцев' : 'всё время') + ')...');
+        
+        const eventSource = new EventSource('/extract-tracks-stream?url=' + encodeURIComponent(url));
+        
+        eventSource.onmessage = function(e) {
+          const data = JSON.parse(e.data);
+          
+          if (data.log) {
+            addLog(data.log);
+          }
+          
+          if (data.profileName) {
+            profileName = data.profileName;
+            addLog('👤 Владелец: ' + profileName);
+          }
+          
+          if (data.tracks) {
+            // Первая пачка треков (с готовыми ID)
+            allTracks = data.tracks;
+            data.tracks.forEach(addTrack);
+            updateStats(data.found, data.total);
+          }
+          
+          if (data.foundTrack) {
+            // Нашли ещё один трек
+            const idx = allTracks.findIndex(t => t.position === data.foundTrack.position);
+            if (idx >= 0) {
+              allTracks[idx] = data.foundTrack;
+            }
+            addTrack(data.foundTrack);
+            
+            const found = allTracks.filter(t => t.spotifyId).length;
+            updateStats(found, allTracks.length);
+          }
+          
+          if (data.complete) {
+            eventSource.close();
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = false);
+            
+            if (data.allTracks) {
+              allTracks = data.allTracks;
+            }
+            
+            // Формируем URI
+            urisData = allTracks
+              .filter(t => t.spotifyId)
+              .map(t => 'spotify:track:' + t.spotifyId)
+              .join('\n');
+            
+            const copyBtn = document.getElementById('copyBtn');
+            const createBtn = document.getElementById('createBtn');
+            copyBtn.style.display = 'block';
+            createBtn.style.display = 'block';
+            
+            const trackCount = urisData.split('\n').length;
+            copyBtn.textContent = '📋 ' + trackCount + ' URI';
+            createBtn.textContent = '🎵 Создать плейлист (' + trackCount + ' треков)';
+            
+            addLog('🎉 Готово! Можешь создать плейлист или скопировать URI.');
+          }
+          
+          if (data.error) {
+            addLog('❌ ' + data.error);
+            eventSource.close();
+            document.getElementById('btn').disabled = false;
+          }
+        };
+        
+        eventSource.onerror = function() {
+          addLog('❌ Ошибка соединения');
+          eventSource.close();
+          const buttons = document.querySelectorAll('button');
+          buttons.forEach(b => b.disabled = false);
+        };
+      }
+      
+      async function createPlaylist() {
+        const rangeText = currentRange === 'weeks' ? '4w' : currentRange === 'months' ? '6m' : 'lifetime';
+        const defaultName = '[stats.fm] ' + profileName + ' - ' + rangeText;
+        const playlistName = prompt('Название плейлиста:', defaultName);
+        if (!playlistName) return;
+        
+        addLog('🎵 Создаю плейлист "' + playlistName + '"...');
+        document.getElementById('createBtn').disabled = true;
+        document.getElementById('createBtn').textContent = '⏳ Создаю...';
+        
+        try {
+          const response = await fetch('/create-playlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              trackUris: urisData.split('\n'),
+              playlistName: playlistName,
+              range: currentRange
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.error) {
+            addLog('❌ Ошибка: ' + data.error);
+            alert('❌ ' + data.error);
+            return;
+          }
+          
+          addLog('🎉 Плейлист создан: ' + data.playlist.name);
+          addLog('📊 Добавлено треков: ' + data.playlist.trackCount);
+          addLog('🎧 Показываю плеер...');
+          
+          // Показываем плеер плейлиста
+          const playlistId = data.playlist.url.split('/playlist/')[1].split('?')[0];
+          const player = document.getElementById('player');
+          player.style.display = 'block';
+          
+          let playerHtml = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">';
+          playerHtml += '<h3 style="margin: 0; flex: 1;">🎵 ' + data.playlist.name + '</h3>';
+          playerHtml += '<div style="display: flex; gap: 10px;">';
+          playerHtml += '<a href="spotify:playlist:' + playlistId + ':play" style="color: white; text-decoration: none; padding: 8px 16px; background: #1DB954; border-radius: 8px; font-weight: bold;">▶️ Играть</a>';
+          playerHtml += '<a href="' + data.playlist.url + '" target="_blank" style="color: #1DB954; text-decoration: none; padding: 8px 16px; background: rgba(29,185,84,0.2); border-radius: 8px;">Открыть →</a>';
+          playerHtml += '</div></div>';
+          playerHtml += '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/' + playlistId + '?utm_source=generator" width="100%" height="600" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+          
+          player.innerHTML = playerHtml;
+          player.scrollIntoView({ behavior: 'smooth' });
+          
+        } catch (error) {
+          addLog('❌ Ошибка: ' + error.message);
+          alert('❌ ' + error.message);
+        } finally {
+          document.getElementById('createBtn').disabled = false;
+          document.getElementById('createBtn').textContent = '🎵 Создать плейлист';
+        }
+      }
+      
+      function copyUris() {
+        const textarea = document.createElement('textarea');
+        textarea.value = urisData;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        addLog('✅ Скопировано ' + urisData.split('\n').length + ' URI!');
+        alert('✅ Скопировано!\n\nОткрой Spotify → создай плейлист → Cmd+V');
+      }
+    </script>
+</body>
+</html>
+

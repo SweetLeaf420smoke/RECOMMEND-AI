@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Stats.fm → Spotify Playlist</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1DB954 0%, #191414 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(0,0,0,0.7);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #1ed760;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        .success { background: rgba(29, 185, 84, 0.3); }
+        .error { background: rgba(255, 0, 0, 0.3); }
+        .info { background: rgba(66, 165, 245, 0.3); }
+        .steps {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .steps ol {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Stats.fm → Spotify</h1>
+        <p style="text-align: center; opacity: 0.8; margin-bottom: 30px;">
+            Создай плейлист из любимых треков пользователя stats.fm
+        </p>
+
+        <input 
+            type="text" 
+            id="statsUrl" 
+            placeholder="Вставь ссылку: https://stats.fm/username/tracks"
+        />
+        
+        <button id="createBtn" onclick="createPlaylist()">
+            Создать плейлист
+        </button>
+
+        <div id="status"></div>
+
+        <div class="steps">
+            <strong>Как работает:</strong>
+            <ol>
+                <li>Вставь ссылку на профиль stats.fm</li>
+                <li>Нажми "Создать плейлист"</li>
+                <li>Авторизуйся в Spotify (первый раз)</li>
+                <li>Плейлист появится в твоём Spotify!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Spotify App credentials (создай в https://developer.spotify.com/dashboard)
+        const SPOTIFY_CLIENT_ID = '70c315547b85400089fc972cb993f2e7'; // Твой существующий
+        const REDIRECT_URI = 'http://127.0.0.1:8080/callback.html';
+        
+        let accessToken = localStorage.getItem('spotify_token');
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+            status.style.display = 'block';
+        }
+
+        function getSpotifyAuth() {
+            const scopes = 'playlist-modify-public playlist-modify-private';
+            const authUrl = `https://accounts.spotify.com/authorize?` +
+                `client_id=${SPOTIFY_CLIENT_ID}&` +
+                `response_type=token&` +
+                `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
+                `scope=${encodeURIComponent(scopes)}`;
+            
+            window.location.href = authUrl;
+        }
+
+        // Проверка токена из URL (после редиректа)
+        if (window.location.hash) {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const token = params.get('access_token');
+            if (token) {
+                localStorage.setItem('spotify_token', token);
+                accessToken = token;
+                window.location.hash = '';
+                showStatus('✅ Авторизация успешна!', 'success');
+            }
+        }
+
+        async function createPlaylist() {
+            const url = document.getElementById('statsUrl').value.trim();
+            
+            if (!url || !url.includes('stats.fm')) {
+                showStatus('❌ Введи правильную ссылку stats.fm', 'error');
+                return;
+            }
+
+            if (!accessToken) {
+                showStatus('🔑 Авторизуйся в Spotify...', 'info');
+                setTimeout(() => getSpotifyAuth(), 2000);
+                return;
+            }
+
+            const btn = document.getElementById('createBtn');
+            btn.disabled = true;
+            btn.textContent = 'Создаём...';
+
+            try {
+                showStatus('📥 Парсим треки с stats.fm...', 'info');
+                
+                // Извлекаем username из URL
+                const username = url.split('stats.fm/')[1].split('/')[0];
+                
+                // Получаем треки (через прокси или напрямую)
+                // Для простоты сначала запросим у пользователя список вручную
+                const tracks = await prompt('Пока парсинг не работает. Вставь треки через запятую (название - исполнитель):');
+                
+                if (!tracks) {
+                    throw new Error('Отменено');
+                }
+
+                showStatus('🎵 Ищем треки в Spotify...', 'info');
+                
+                // Получаем ID пользователя
+                const userResponse = await fetch('https://api.spotify.com/v1/me', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const userData = await userResponse.json();
+                
+                // Создаём плейлист
+                const playlistResponse = await fetch(`https://api.spotify.com/v1/users/${userData.id}/playlists`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: `From stats.fm/${username}`,
+                        description: `Generated from stats.fm profile`,
+                        public: false
+                    })
+                });
+                
+                const playlist = await playlistResponse.json();
+                
+                showStatus(`✅ Плейлист создан: ${playlist.name}`, 'success');
+                
+                setTimeout(() => {
+                    window.open(playlist.external_urls.spotify, '_blank');
+                }, 1000);
+                
+            } catch (error) {
+                showStatus(`❌ Ошибка: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Создать плейлист';
+            }
+        }
+    </script>
+</body>
+</html>
+
