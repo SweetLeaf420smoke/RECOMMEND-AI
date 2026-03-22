@@ -17,6 +17,4 @@
 
 ## Обратная связь респондентов
 
-- [feedback/RESPONDENT-01-ELEONORA.md](./feedback/RESPONDENT-01-ELEONORA.md) — первый отзыв, Элеонора.
-- [feedback/RESPONDENT-02-ELEONORA.md](./feedback/RESPONDENT-02-ELEONORA.md) — второй отзыв, Элеонора (после демо v2).
-- [feedback/DEMO-V1-FIX-THESIS.md](./feedback/DEMO-V1-FIX-THESIS.md) — тезисы, что исправить в демо v1.
+Файлы отзывов и расшифровок лежат **только на машине** в папке `docs/taste-compass/feedback/` (в GitHub не кладём — там только код для деплоя сайта).

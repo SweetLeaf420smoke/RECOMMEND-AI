@@ -8,8 +8,8 @@
 | [MARKET-SIGNALS-PRIOR-CHAT.md](./MARKET-SIGNALS-PRIOR-CHAT.md) | Боль рынка (Reddit), соседние сервисы, короткий питч; связь Synq vs TasteCompass |
 | [taste-compass/VISION-END-STATE.md](./taste-compass/VISION-END-STATE.md) | Конечное видение: какие задачи решает сервис в идеале |
 | [taste-compass/NAMING.md](./taste-compass/NAMING.md) | Название: вычеркнуто и кандидаты |
-| [taste-compass/feedback/RESPONDENT-01-ELEONORA.md](./taste-compass/feedback/RESPONDENT-01-ELEONORA.md) | Отзыв респондента 1 |
-| [taste-compass/feedback/DEMO-V1-FIX-THESIS.md](./taste-compass/feedback/DEMO-V1-FIX-THESIS.md) | Тезисы: что исправить в демо v1 по отзыву |
+
+Отзывы респондентов — **только локально**: `taste-compass/feedback/` (не в репозитории).
 
 ## Реализация стратегии (фазы A–E)
 
