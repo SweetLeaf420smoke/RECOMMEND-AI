@@ -7,7 +7,7 @@ import {
 } from "../utils/tasteCompassEngine.js";
 
 const router = express.Router();
-const DEMO_VERSION = "v2.3";
+const DEMO_VERSION = "v2.3.1";
 
 router.use((req, res, next) => {
   res.locals.demoVersion = DEMO_VERSION;

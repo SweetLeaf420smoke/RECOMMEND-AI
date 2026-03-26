@@ -43,12 +43,12 @@
     <% } %>
 
     <% if (typeof allMarked !== 'undefined' && allMarked) { %>
-      <p class="tc-done">Все варианты из этой подборки ты уже отметил. Можно изменить ответы в опросе или просто закрыть страницу.</p>
+      <p class="tc-done" id="tc-all-done">Все варианты из этой подборки ты уже отметил. Можно изменить ответы в опросе или просто закрыть страницу.</p>
     <% } else if (!topPick) { %>
       <p class="tc-error">Пока нечего показать. Попробуй другой город или отметь больше вкусов в опросе.</p>
     <% } else { %>
 
-    <section class="tc-hero" aria-labelledby="hero-title">
+    <section class="tc-hero" aria-labelledby="hero-title" <% if (typeof feedbackNote !== 'undefined' && feedbackNote) { %>id="tc-next-focus"<% } %>>
       <h2 id="hero-title">Главная идея вечера</h2>
       <article class="tc-place tc-place-hero">
         <h3><%= topPick.place.name %></h3>
@@ -99,5 +99,17 @@
 
     <p><a href="/taste-compass/survey">Изменить ответы</a> · <a href="/taste-compass/">О демо</a></p>
   </main>
+  <% if (typeof feedbackNote !== 'undefined' && feedbackNote) { %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var next = document.getElementById('tc-next-focus');
+      var done = document.getElementById('tc-all-done');
+      var el = next || done;
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  </script>
+  <% } %>
 </body>
 </html>
