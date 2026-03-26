@@ -215,24 +215,45 @@ code {
   color: #c5cbd6;
 }
 
+.tc-marked-hint {
+  margin: 0 0 14px;
+  font-size: 0.88rem;
+  color: #8a93a3;
+  line-height: 1.4;
+}
+
 .tc-marked-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.tc-marked-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding: 8px 0;
+.tc-marked-item {
+  padding: 16px 0;
   border-bottom: 1px solid #2a2f3a;
   font-size: 0.95rem;
 }
 
-.tc-marked-list li:last-child {
+.tc-marked-item:last-child {
   border-bottom: none;
+}
+
+.tc-marked-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.tc-marked-meta {
+  margin: 4px 0 8px;
+  font-size: 0.88rem;
+}
+
+.tc-marked-desc {
+  margin: 8px 0;
+  line-height: 1.45;
 }
 
 .tc-marked-name {

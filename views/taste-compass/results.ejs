@@ -31,11 +31,22 @@
     <% if (markedList.length) { %>
     <section class="tc-marked" aria-labelledby="marked-title">
       <h2 id="marked-title">Уже отметил</h2>
+      <p class="tc-marked-hint">Текст и ссылка остаются здесь, чтобы можно было перечитать без возврата в основной список.</p>
       <ul class="tc-marked-list">
         <% markedList.forEach((row) => { %>
-          <li>
-            <span class="tc-marked-name"><%= row.place.name %></span>
-            <span class="tc-marked-tag"><%= row.sessionAction === 'went' ? 'нравится' : 'не нравится' %></span>
+          <li class="tc-marked-item">
+            <div class="tc-marked-head">
+              <span class="tc-marked-name"><%= row.place.name %></span>
+              <span class="tc-marked-tag"><%= row.sessionAction === 'went' ? 'нравится' : 'не нравится' %></span>
+            </div>
+            <% if (row.place.neighborhood) { %>
+              <p class="tc-muted tc-marked-meta">Район: <%= row.place.neighborhood %></p>
+            <% } %>
+            <% if (row.place.description) { %>
+              <p class="tc-desc tc-marked-desc"><%= row.place.description %></p>
+            <% } %>
+            <p class="tc-why-small"><strong>Почему попало:</strong> <%= row.reasons.join(" ") %></p>
+            <p><a href="<%= row.place.url %>" target="_blank" rel="noopener">Открыть пример ссылки</a></p>
           </li>
         <% }); %>
       </ul>
