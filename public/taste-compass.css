@@ -195,3 +195,62 @@ code {
   padding: 2px 6px;
   border-radius: 4px;
 }
+
+.tc-intro-short {
+  font-size: 0.95rem;
+  color: #b8c0cc;
+}
+
+.tc-marked {
+  margin: 20px 0;
+  padding: 14px 16px;
+  background: #141820;
+  border: 1px solid #2a2f3a;
+  border-radius: 10px;
+}
+
+.tc-marked h2 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+  color: #c5cbd6;
+}
+
+.tc-marked-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tc-marked-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #2a2f3a;
+  font-size: 0.95rem;
+}
+
+.tc-marked-list li:last-child {
+  border-bottom: none;
+}
+
+.tc-marked-name {
+  font-weight: 600;
+  color: #e8eaed;
+}
+
+.tc-marked-tag {
+  color: #8a93a3;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.tc-done {
+  padding: 14px;
+  background: #1a2230;
+  border: 1px solid #2d3d55;
+  border-radius: 8px;
+  color: #b8c0cc;
+  line-height: 1.5;
+}

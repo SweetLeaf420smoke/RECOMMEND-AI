@@ -13,10 +13,11 @@
     <h1>Привет<%= greet %>, вот идеи для <%= cityLabel %></h1>
 
     <% if (typeof feedbackNote !== 'undefined' && feedbackNote) { %>
-      <p class="tc-note"><%= feedbackNote %></p>
+      <p class="tc-note" id="tc-continue"><%= feedbackNote %></p>
+      <p class="tc-intro tc-intro-short">Дальше только то, что ты ещё не нажимал. Уже отмеченное вынесли отдельно, чтобы не листать одно и то же.</p>
+    <% } else { %>
+      <p class="tc-intro" id="tc-continue">Ниже до пяти разных типов вечера. Первый в списке ближе всего к твоим ответам, остальные запасные, чтобы можно было выбрать под настроение. Мы специально смешиваем форматы, а не повторяем один и тот же совет десять раз. Сейчас данные примерные, а ссылки не ведут в живые брони.</p>
     <% } %>
-
-    <p class="tc-intro">Ниже до пяти разных типов вечера. Первый в списке ближе всего к твоим ответам, остальные запасные, чтобы можно было выбрать под настроение. Мы специально смешиваем форматы, а не повторяем один и тот же совет десять раз. Сейчас данные примерные, а ссылки не ведут в живые брони.</p>
     <% if (profile.datePlan) { %>
       <p class="tc-muted">Сроки, которые ты указал: <strong><%= profile.datePlan %></strong>. В полной версии сюда можно было бы привязать афишу.</p>
     <% } %>
@@ -26,7 +27,24 @@
       <p class="tc-muted">В подборке учтены настроение вечера (<%= moodLabels[profile.eveningMood] || profile.eveningMood %>) и состав (<%= companyLabels[profile.company] || profile.company %>).</p>
     <% } %>
 
-    <% if (!topPick) { %>
+    <% const markedList = typeof markedRows !== 'undefined' && markedRows ? markedRows : []; %>
+    <% if (markedList.length) { %>
+    <section class="tc-marked" aria-labelledby="marked-title">
+      <h2 id="marked-title">Уже отметил</h2>
+      <ul class="tc-marked-list">
+        <% markedList.forEach((row) => { %>
+          <li>
+            <span class="tc-marked-name"><%= row.place.name %></span>
+            <span class="tc-marked-tag"><%= row.sessionAction === 'went' ? 'нравится' : 'не нравится' %></span>
+          </li>
+        <% }); %>
+      </ul>
+    </section>
+    <% } %>
+
+    <% if (typeof allMarked !== 'undefined' && allMarked) { %>
+      <p class="tc-done">Все варианты из этой подборки ты уже отметил. Можно изменить ответы в опросе или просто закрыть страницу.</p>
+    <% } else if (!topPick) { %>
       <p class="tc-error">Пока нечего показать. Попробуй другой город или отметь больше вкусов в опросе.</p>
     <% } else { %>
 

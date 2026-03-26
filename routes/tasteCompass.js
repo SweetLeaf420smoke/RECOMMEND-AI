@@ -7,7 +7,7 @@ import {
 } from "../utils/tasteCompassEngine.js";
 
 const router = express.Router();
-const DEMO_VERSION = "v2.2";
+const DEMO_VERSION = "v2.3";
 
 router.use((req, res, next) => {
   res.locals.demoVersion = DEMO_VERSION;
@@ -24,11 +24,21 @@ function cityLabelFor(cityId) {
   return cities.find((c) => c.id === cityId)?.label || cityId;
 }
 
-function buildResultsViewData(profile, ranked, feedbackNote) {
+function buildResultsViewData(profile, ranked, feedbackNote, feedbackMap = {}) {
   const cityLabel = cityLabelFor(profile.cityId);
-  const topPick = ranked.length ? ranked[0] : null;
-  const alternatives = ranked.slice(1, 5);
-  const hiddenCount = Math.max(0, ranked.length - 5);
+  const markedRows = [];
+  const unmarkedRows = [];
+  for (const row of ranked) {
+    const pid = row.place.id;
+    if (feedbackMap[pid]) {
+      markedRows.push({ ...row, sessionAction: feedbackMap[pid] });
+    } else {
+      unmarkedRows.push(row);
+    }
+  }
+  const topPick = unmarkedRows.length ? unmarkedRows[0] : null;
+  const alternatives = unmarkedRows.slice(1, 5);
+  const hiddenCount = Math.max(0, unmarkedRows.length - 5);
   return {
     profile,
     cityLabel,
@@ -36,6 +46,10 @@ function buildResultsViewData(profile, ranked, feedbackNote) {
     alternatives,
     hiddenCount,
     ranked,
+    markedRows,
+    hasUnmarked: unmarkedRows.length > 0,
+    allMarked:
+      unmarkedRows.length === 0 && ranked.length > 0 && markedRows.length > 0,
     feedbackNote: feedbackNote || null,
     demoVersion: DEMO_VERSION,
   };
@@ -91,11 +105,12 @@ router.post("/results", (req, res) => {
   };
 
   req.session.tasteProfile = profile;
+  req.session.tasteFeedback = {};
   const boosts = loadFeedbackBoosts();
   const ranked = rankPlaces(profile, boosts);
   res.render("taste-compass/results", {
     title: "Подборка",
-    ...buildResultsViewData(profile, ranked),
+    ...buildResultsViewData(profile, ranked, null, {}),
   });
 });
 
@@ -109,11 +124,19 @@ router.post("/feedback", (req, res) => {
   if (!profile) {
     return res.redirect("/taste-compass/survey");
   }
+  if (!req.session.tasteFeedback) req.session.tasteFeedback = {};
+  req.session.tasteFeedback[placeId] = action;
+
   const boosts = loadFeedbackBoosts();
   const ranked = rankPlaces(profile, boosts);
   res.render("taste-compass/results", {
     title: "Подборка",
-    ...buildResultsViewData(profile, ranked, "Учли твой ответ, порядок мог чуть сдвинуться."),
+    ...buildResultsViewData(
+      profile,
+      ranked,
+      "Ответ записали. Ниже только то, что ещё не отмечал.",
+      req.session.tasteFeedback
+    ),
   });
 });
 
